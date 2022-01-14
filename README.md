@@ -1,4 +1,4 @@
-# DSML_Researcher
+# DSML_Research
 > 프로젝트명 : 의료데이터 예측 모델 구현
 * 2021.06 ~ 
 * 추후 논문 을 목표로 함.
