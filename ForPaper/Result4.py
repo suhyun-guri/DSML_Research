@@ -44,7 +44,7 @@ if gpus:
         print(e)
 
 path = '/project/LSH/'
-model_path = path + 'model/allfit_ep500/allfit_ep500_seed42-17-0.7619.hdf5'
+model_path = '/project/guri/ForPaper/models/seed42-06-val_loss:0.5528.hdf5'
 
 COLS = list(pd.read_csv(path + 'total_data_7727.csv')['ITEMID'].sort_values().unique())
 x = np.load(path + 'x_(7727,10,4068).npy')
@@ -93,10 +93,10 @@ with tf.device('/device:GPU:1'):
         근_mean_pred2 = np.mean(근_pred2)
         #-----값 복원-----
         X[:,:,i] = save_cols
-
+        
         result.append({'feature' : str(COLS[i]),'원_lambda1' : (원_mean_pred1 - 원_mean_pred2) * entropy_dict[COLS[i]],
-                       '근_lambda1' : (근_mean_pred1 - 근_mean_pred2)})        
+                       '근_lambda1' : (근_mean_pred1 - 근_mean_pred2)* entropy_dict[COLS[i]]})        
 
 
 df = pd.DataFrame(result).sort_values('feature')
-df.to_csv('./Result4.csv', index=False)
+df.to_csv('./Result4_loss.csv', index=False)
