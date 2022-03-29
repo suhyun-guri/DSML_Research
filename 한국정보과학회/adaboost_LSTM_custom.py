@@ -18,6 +18,8 @@ from sklearn.metrics import roc_auc_score
 from sklearn import metrics 
 from tensorflow import keras
 import random  
+from tensorflow.keras.callbacks import EarlyStopping
+
 seed_num = 42
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -80,10 +82,10 @@ class MyKerasClassifier(KerasClassifier):
             if sample_weight[0] == 0.00016175994823681658:
 #                 kwargs['sample_weight'] = sample_weight
                 print('x, y', x.shape, x.sum().sum())
-                return super().fit(x, y, sample_weight=sample_weight)
+                return super().fit(x, y)
             weights = sample_weight / sum(sample_weight)
             random_range = [(sum(weights[:i]), sum(weights[:i])+weights[i]) if i!=0 else (0, weights[i]) for i in range(len(weights))]
-            random_nums = [random.uniform(min(weights), max(weights)) for _ in range(len(weights))]
+            random_nums = [random.random() for _ in range(len(weights))]
             idx_list = []
             for i in random_nums:
                 for j in random_range:
@@ -95,7 +97,7 @@ class MyKerasClassifier(KerasClassifier):
 #             kwargs['sample_weight'] = sample_weight
             print(new_x.sum().sum())
             print('new_x, new_y', new_x.shape, new_y.shape)
-            return super().fit(new_x, new_y, sample_weight=sample_weight)
+            return super().fit(new_x, new_y)
             # return super().fit(x, y, sample_weight=sample_weight)
         
     def predict(self, x, **kwargs):
@@ -103,11 +105,14 @@ class MyKerasClassifier(KerasClassifier):
         classes = self.model.predict_classes(x, **kwargs)
         return self.classes_[classes].flatten()
 
-lstm = get_model()
+from tensorflow.keras.callbacks import ModelCheckpoint
 with tf.device('/device:GPU:0'):
-    base_estimator = MyKerasClassifier(build_fn=lambda:lstm, epochs=50, batch_size=256)
+    early_stop = EarlyStopping(monitor='val_loss', patience=10, verbose=1, restore_best_weights=True)
+    cb_checkpoint = ModelCheckpoint(filepath='./models/adaboost_lstm1.h5', monitor='val_acc',
+                                    verbose=1, save_best_only=True)
+    base_estimator = MyKerasClassifier(build_fn=get_model, epochs=50, batch_size=128, validation_split=0.25, callbacks=[early_stop, cb_checkpoint])
     
-    boosted_classifier = AdaBoostClassifier(base_estimator=base_estimator,n_estimators=3,random_state=42, learning_rate=1.2)
+    boosted_classifier = AdaBoostClassifier(base_estimator=base_estimator,n_estimators=3, random_state=42, learning_rate=0.8)
     # print("Single LSTM Start")
     # lstm.fit(X_train, y_train, epochs=50, batch_size=256, validation_split=0.2)
     # single_preds = lstm.predict(X_test)
@@ -122,6 +127,10 @@ with tf.device('/device:GPU:0'):
     # single_f1 = f1_score(y_test, single_preds)
     # single_roc_auc = roc_auc_score(y_test, single_preds)
     # single_acc = accuracy_score(y_test, single_preds)
+    # print(boosted_classifier.estimators_)
+    # print(boosted_classifier.estimators_[0].model_.get_weights()[0][0, :5])  # first sub-estimator
+    # print(boosted_classifier.estimators_[1].model_.get_weights()[0][0, :5])  # second sub-estimator
+
 
     precision = precision_score(y_test, preds)
     recall = recall_score(y_test, preds)

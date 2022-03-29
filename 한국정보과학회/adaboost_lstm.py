@@ -1,3 +1,4 @@
+from subprocess import call
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -15,6 +16,7 @@ from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import roc_auc_score
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print(gpus)
@@ -58,32 +60,36 @@ def get_model():
                           loss = "binary_crossentropy", metrics=['acc'])
     return lstm
 
+cb_checkpoint = ModelCheckpoint(filepath='./models/adaboost_lstm.h5', monitor='val_acc',
+                                        verbose=1, save_best_only=True)
 early_stop = EarlyStopping(monitor='val_acc', patience=10, verbose=1, restore_best_weights=False)
 lstm = get_model()
 clf = KerasClassifier(
     model=lambda:lstm, epochs=50, batch_size=256, validation_split=0.2, loss='binary_crossentropy',
-    optimizer='adam', optimizer__lr=0.001
+    optimizer='adam', optimizer__lr=0.001, callbacks=[cb_checkpoint]
 )
 
-with tf.device('/device:GPU:0'):
-    adaboost = AdaBoostClassifier(base_estimator=clf, random_state=0, n_estimators=5, learning_rate=1.2)
-    print("Single LSTM Start")
-    single_score = clf.fit(X_train, y_train).score(X_train, y_train)
-    single_preds = clf.predict(X_test)
+with tf.device('/device:GPU:1'):
+    adaboost = AdaBoostClassifier(base_estimator=clf, random_state=0, n_estimators=2, learning_rate=1.2)
+    # print("Single LSTM Start")
+    # single_score = clf.fit(X_train, y_train).score(X_train, y_train)
+    # single_preds = clf.predict(X_test)
     print("Adaboost LSTM Start")
     adaboost_score = adaboost.fit(X_train, y_train).score(X_train, y_train)
     preds = adaboost.predict(X_test)
 
-print(f"Single score: {single_score}")
+# print(f"Single score: {single_score}")
 print(f"AdaBoost score: {adaboost_score}")
 
+print(adaboost.estimators_)
+print(adaboost.estimators_[0].model_.get_weights()[1][0, :5])  # first sub-estimator
+print(adaboost.estimators_[1].model_.get_weights()[1][0, :5])  # second sub-estimator
 
-
-single_precision = precision_score(y_test, single_preds)
-single_recall = recall_score(y_test, single_preds)
-single_f1 = f1_score(y_test, single_preds)
-single_roc_auc = roc_auc_score(y_test, single_preds)
-single_acc = accuracy_score(y_test, single_preds)
+# single_precision = precision_score(y_test, single_preds)
+# single_recall = recall_score(y_test, single_preds)
+# single_f1 = f1_score(y_test, single_preds)
+# single_roc_auc = roc_auc_score(y_test, single_preds)
+# single_acc = accuracy_score(y_test, single_preds)
 
 precision = precision_score(y_test, preds)
 recall = recall_score(y_test, preds)
@@ -91,5 +97,5 @@ f1 = f1_score(y_test, preds)
 roc_auc = roc_auc_score(y_test, preds)
 acc = accuracy_score(y_test, preds)
 
-print(f'single accuracy : {single_acc}, precision : {single_precision}, recall : {single_recall}, f1 : {single_f1}, roc_auc : {single_roc_auc}')
+# print(f'single accuracy : {single_acc}, precision : {single_precision}, recall : {single_recall}, f1 : {single_f1}, roc_auc : {single_roc_auc}')
 print(f'Adaboost accuracy : {acc}, precision : {precision}, recall : {recall}, f1 : {f1}, roc_auc : {roc_auc}')
