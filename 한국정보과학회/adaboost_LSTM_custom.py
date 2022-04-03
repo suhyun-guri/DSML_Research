@@ -126,44 +126,45 @@ class MyKerasClassifier(KerasClassifier):
 # with tf.device('/device:GPU:1'):
 
 batch = 516
-estimators_nums = 200
+estimators_nums = 300
 lr = 0.9
 
 early_stop = EarlyStopping(monitor='val_loss', patience=10, verbose=1, restore_best_weights=True)
-# base_estimator = MyKerasClassifier(build_fn=get_model, epochs=300, batch_size=batch,
-#                                     validation_split=0.25, callbacks=[early_stop])
-# boosted_classifier = AdaBoostClassifier(base_estimator=base_estimator, n_estimators=estimators_nums, random_state=42, learning_rate=lr)
+base_estimator = MyKerasClassifier(build_fn=get_model, epochs=300, batch_size=batch,
+                                    validation_split=0.25, callbacks=[early_stop])
+boosted_classifier = AdaBoostClassifier(base_estimator=base_estimator, n_estimators=estimators_nums, random_state=42, learning_rate=lr)
 
-# print("Adaboost LSTM Start")
-# boosted_classifier.fit(X_train, y_train)
-# preds = boosted_classifier.predict(X_test)
+print("Adaboost LSTM Start")
+boosted_classifier.fit(X_train, y_train)
+preds = boosted_classifier.predict(X_test)
 
-# precision = precision_score(y_test, preds)
-# recall = recall_score(y_test, preds)
-# f1 = f1_score(y_test, preds)
-# roc_auc = roc_auc_score(y_test, preds)
-# acc = accuracy_score(y_test, preds)
-
-# print(f'Adaboost accuracy : {acc}, precision : {precision}, recall : {recall}, f1 : {f1}, roc_auc : {roc_auc}')
-# acc_list = [accuracy_score(y_test,i) for i in boosted_classifier.staged_predict(X_test)]
-# print(acc_list)
-# import time
-# now = time.localtime()
-# nowtime = "%04d/%02d/%02d %02d:%02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)
-# with open('./Result_of_Adaboost.txt', 'a') as f:
-#     f.write(f'{nowtime} [batch:{batch}, n:{estimators_nums}, lr:{lr}]- accuracy : {acc}, precision : {precision}, recall : {recall}, f1 : {f1}, roc_auc : {roc_auc} acc_list : {acc_list} \n')
-
-
-model = get_model()
-model.fit(X_train, y_train, epochs=300, batch_size=batch, validation_split=0.25, callbacks=[early_stop])
-preds = model.predict(X_test)
-
-preds[preds>0.5]=1
-preds[preds<=0.5]=0
 precision = precision_score(y_test, preds)
 recall = recall_score(y_test, preds)
 f1 = f1_score(y_test, preds)
 roc_auc = roc_auc_score(y_test, preds)
 acc = accuracy_score(y_test, preds)
 
-print(f'accuracy : {acc}, precision : {precision}, recall : {recall}, f1 : {f1}, roc_auc : {roc_auc}')
+print(f'Adaboost accuracy : {acc}, precision : {precision}, recall : {recall}, f1 : {f1}, roc_auc : {roc_auc}')
+acc_list = [accuracy_score(y_test,i) for i in boosted_classifier.staged_predict(X_test)]
+print(acc_list)
+import time
+now = time.localtime()
+nowtime = "%04d/%02d/%02d %02d:%02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)
+with open('./Result_of_Adaboost.txt', 'a') as f:
+    f.write(f'{nowtime} [batch:{batch}, n:{estimators_nums}, lr:{lr}]- accuracy : {acc}, precision : {precision}, recall : {recall}, f1 : {f1}, roc_auc : {roc_auc} acc_list : {acc_list} \n')
+
+
+#-----single LSTM-----
+# model = get_model()
+# model.fit(X_train, y_train, epochs=300, batch_size=batch, validation_split=0.25, callbacks=[early_stop])
+# preds = model.predict(X_test)
+
+# preds[preds>0.5]=1
+# preds[preds<=0.5]=0
+# precision = precision_score(y_test, preds)
+# recall = recall_score(y_test, preds)
+# f1 = f1_score(y_test, preds)
+# roc_auc = roc_auc_score(y_test, preds)
+# acc = accuracy_score(y_test, preds)
+
+# print(f'accuracy : {acc}, precision : {precision}, recall : {recall}, f1 : {f1}, roc_auc : {roc_auc}')
