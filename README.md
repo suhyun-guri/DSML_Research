@@ -7,9 +7,12 @@
 * Feature Importance 계산 방식을 개발하여 생존/사망에 영향을 미치는 의료 바이오 마커 탐지
 
 ## 📑 Paper.
+- [Identification of Time-Series Pattern Marker in its Application to Mortality Analysis of Pneumonia Patients in Intensive Care Unit](https://www.mdpi.com/2075-4426/14/8/812)
+  - 이수현, 김수현, 고가연, 안홍렬*
+  - Journal of Personalized Medicine (2024.07)
 - [중환자실 폐렴 환자에 대한 시뮬레이션 기반 시계열 사망 마커 탐지](https://www.dbpia.co.kr/journal/articleDetail?nodeId=NODE11113850)
   - 김수현, 이수현, 고가연, 안홍렬*
-  - 한국정보과학회 2022 한국컴퓨터종합학술대회
+  - 한국정보과학회 2022 한국컴퓨터종합학술대회 (2022.06)
 
 ## 🌞 MIMIC_III DATA
 [MIMIC-III documentation](https://mimic.mit.edu/docs/iii/) <br>
