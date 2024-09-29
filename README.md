@@ -1,7 +1,7 @@
 # DSML_Research
 **DS&ML (Data Science&Machine Learning) 센터 소속 학부 연구생 프로젝트**
 > 프로젝트명 : 의료데이터 예측 모델 개발 + 폐렴환자의 생존에 영향을 미치는 의료 바이오 마커 탐지 (Detection of medical biomarkers affecting mortality in patients with intensive care unit EMR pneumonia)
-* 2021.06 ~ 
+* 2021.06 ~ 2024.07
 * 국내/해외 논문을 목표로 함.
 * MIMIC_III 데이터를 사용하여 mortality prediction 모델을 구축
 * Feature Importance 계산 방식을 개발하여 생존/사망에 영향을 미치는 의료 바이오 마커 탐지
